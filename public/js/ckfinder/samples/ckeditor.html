@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2007-2023, CKSource Holding sp. z o.o. All rights reserved.
+For licensing, see LICENSE.html or https://ckeditor.com/sales/license/ckfinder
+-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>CKFinder 3 Samples</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--[if lt IE 9]>
+	<script src="js/html5shiv.min.js"></script>
+	<![endif]-->
+        <link href="css/sample.css" rel="stylesheet">
+    </head>
+    <body>
+        <div id="editor2"></div>
+        <nav class="navigation-a">
+            <div class="grid-container">
+                <ul class="navigation-a-left grid-width-70">
+                    <li>
+                        <a href="https://ckeditor.com/ckfinder/">Project Homepage</a>
+                    </li>
+                    <li class="global-is-mobile-hidden">
+                        <a href="https://github.com/ckfinder/ckfinder/issues">I found a bug in CKFinder</a>
+                    </li>
+                    <li class="global-is-mobile-hidden">
+                        <a class="icon-pos-right icon-navigation-a-github" href="https://github.com/ckfinder/ckfinder-docs-samples">Sample Plugins on GitHub</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <style>div.ck-editor__editable { min-height: 200px;}</style>
+        <script src="https://cdn.ckeditor.com/4.20.0/standard-all/ckeditor.js"></script>
+        <script src="../ckfinder.js"></script>
+        <script>
+
+	// Note: in this sample we use CKEditor with two extra plugins:
+	// - uploadimage to support pasting and dragging images,
+	// - image2 (instead of image) to provide images with captions.
+	// Additionally, the CSS style for the editing area has been slightly modified to provide responsive images during editing.
+	// All these modifications are not required by CKFinder, they just provide better user experience.
+	if ( typeof CKEDITOR !== 'undefined' ) {
+		CKEDITOR.disableAutoInline = true;
+		CKEDITOR.addCss( 'img {max-width:100%; height: auto;}' );
+		var editor = CKEDITOR.replace( 'editor2', {
+			extraPlugins: 'uploadimage,image2',
+			removePlugins: 'image',
+			height:250
+		} );
+		CKFinder.setupCKEditor( editor );
+	} else {
+		document.getElementById( 'editor2' ).innerHTML =
+			'<div class="tip-a tip-a-alert">This sample requires working Internet connection to load CKEditor 4 from CDN.</div>'
+	}
+        </script>
+    </body>
+</html>

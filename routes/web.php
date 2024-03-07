@@ -19,6 +19,8 @@ use App\Http\Controllers\ProductCinemaController;
 use App\Http\Controllers\EpisodeController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\ProductBannerController;
+use App\Http\Controllers\CrawlDataController;
+use App\Http\Controllers\PhimMoiCrawlDataController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +32,8 @@ use App\Http\Controllers\ProductBannerController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+// Route::get('/crawl', [PhimMoiCrawlDataController::class, 'crawlPhimBo']);
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -50,9 +54,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::post('/change-ord', [VinawebappController::class, 'changeORD']);
     Route::post('/get-data-district/{id}', [VinawebappController::class, 'getDataDistrict']);
     Route::post('/get-data-ward/{id}', [VinawebappController::class, 'getDataWard']);
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [VinawebappController::class, 'showDashboard'])->name('dashboard');
+
     // start Company
     Route::prefix('company')->group(function () {
         Route::get('', [CompanyController::class, 'showCompany'])->name('Company');

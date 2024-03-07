@@ -108,7 +108,7 @@ const logout = () => {
                                     </Dropdown>
                                 </div>
                                 <div class="ms-">
-                                    <a href="https://199sstudio.com/" target="_blank"><button class="flex items-center text-white   px-2 py-1 bg-gray-700 hover:bg-blue-600 ">
+                                    <a href="https://www.ketromphim.com/" target="_blank"><button class="flex items-center text-white   px-2 py-1 bg-gray-700 hover:bg-blue-600 ">
                                             <icon icon="right-to-bracket" class="mr-2" /> Truy cập trang web
                                         </button></a>
                                 </div>

@@ -27,17 +27,6 @@ class YearController extends Controller
 
     function create(Request $rq)
     {
-        // for ($i = 1981; $i < 2025; $i++) {
-        //     Year::create([
-        //         'name' => $i,
-        //         'slug' => $i,
-        //         'meta_image' => 'http://file.webphim.demo/images/fdm-verbal-language.png',
-        //         'meta_title' => 'Danh sách phim phát hành năm ' . $i,
-        //         'meta_desc' => 'Danh sách phim phát hành năm ' . $i,
-        //     ]);
-        // }
-        // return response()->json(['success' => 'Cập nhập dữ liệu thành công']);
-
         $data = [];
 
         if (!$rq->name) {
@@ -53,24 +42,6 @@ class YearController extends Controller
                 return response()->json(['error' => 'Đã có đường dẫn này, nhập đường dẫn khác để tối ưu SEO', 'column' => 'slug']);
             }
             $data['slug'] = $rq->slug;
-        }
-
-        if (!$rq->meta_title) {
-            return response()->json(['error' => 'Vui lòng nhập tiêu đề link để tối ưu SEO', 'column' => 'meta_title']);
-        } else {
-            $data['meta_title'] = $rq->meta_title;
-        }
-
-        if (!$rq->meta_image) {
-            return response()->json(['error' => 'Vui lòng chọn ảnh link để tối ưu SEO', 'column' => 'meta_image']);
-        } else {
-            $data['meta_image'] = $rq->meta_image;
-        }
-
-        if (!$rq->meta_desc) {
-            return response()->json(['error' => 'Vui lòng nhập mô tả link để tối ưu SEO', 'column' => 'meta_desc']);
-        } else {
-            $data['meta_desc'] = $rq->meta_desc;
         }
 
         Year::create($data);

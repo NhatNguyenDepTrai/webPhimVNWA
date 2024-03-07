@@ -15,6 +15,9 @@
                         </button>
                     </div>
                     <div class="float-right text-xs uppercase">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase py-2 px-2 rounded mr-4 text-xs" @click="loadData">
+                            <icon :icon="['fas', 'rotate-left']" class="mr-1" /> Load lại bảng
+                        </button>
                         <button @click="showModalProduct" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded ">
                             <icon :icon="['fas', 'plus']" /> Thêm banner
 
@@ -22,6 +25,7 @@
 
                     </div>
                     <DialogModal :show="isModalProduct" max-width="full">
+
                         <template #title>
                             <div class="flex items-center justify-between">
                                 <h3>
@@ -69,16 +73,17 @@
                                     <template #item-product="{ name, full_name, url_avatar }">
 
                                         <div class="py-3 flex items-center justify-start">
-                                            <img :src="url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 xl:block hidden">
+                                            <img :src="appFileUrl + '/' + url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 xl:block hidden">
                                             <div>
                                                 <span class=" block text-sm font-bold">{{ name }}</span>
                                                 <span class=" block text-sm font-bold text-black/50">{{ full_name }}</span>
                                             </div>
                                         </div>
                                     </template>
+
                                     <template #item-url_bg="{ url_bg }">
 
-                                        <img :src="url_bg" alt="" class="h-28 w-auto">
+                                        <img :src="appFileUrl + '/' + url_bg" alt="" class="h-28 w-auto">
                                     </template>
                                 </DataTable>
 
@@ -94,11 +99,11 @@
                         </template>
                     </DialogModal>
                     <div class="my-2 py-10">
-                        <DataTable :headers="headers" :items="dataPage" buttons-pagination show-index v-model:items-selected="itemsSelected">
+                        <DataTable :loading="loading" :headers="headers" :items="dataPage" buttons-pagination show-index v-model:items-selected="itemsSelected">
 
                             <template #item-product="{ product }">
                                 <div class="py-3 flex items-center justify-start">
-                                    <img :src="product.url_bg" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                    <img :src="appFileUrl + '/' + product.url_bg" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
                                     <div>
                                         <span class=" block text-sm font-bold">{{ product.name }}</span>
                                         <span class=" block text-xs text-black/50 font-bold">{{ product.full_name }}</span>
@@ -106,13 +111,28 @@
                                 </div>
 
                             </template>
+
                             <template #item-status="{ id, status }">
                                 <div class="flex items-center cursor-pointer">
-                                    <input type="checkbox" :id="'statusCheckbox-' + id" v-model="checkedStatusItems[id]" class="hidden" @change="handleStatusChange(id, status)" />
+                                    <input type="checkbox" :id="'statusCheckbox-' + id" class="hidden" @change="handleStatusChange(id, status)" />
                                     <label :for="'statusCheckbox-' + id" class="flex items-center cursor-pointer">
                                         <div class="relative">
                                             <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
-                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': checkedStatusItems[id], 'bg-white': !checkedStatusItems[id] }"></div>
+                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': status == 1, 'bg-white': status == 0 }"></div>
+                                            </div>
+                                        </div>
+
+                                    </label>
+                                </div>
+                            </template>
+
+                            <template #item-highlight="{ id, highlight }">
+                                <div class="flex items-center cursor-pointer justify-center">
+                                    <input type="checkbox" :id="'highlightCheckbox-' + id" class="hidden" @change="handleHighlightChange(id, highlight)" />
+                                    <label :for="'highlightCheckbox-' + id" class="flex items-center cursor-pointer">
+                                        <div class="relative">
+                                            <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
+                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': highlight == 1, 'bg-white': highlight == 0 }"></div>
                                             </div>
                                         </div>
 
@@ -125,6 +145,7 @@
                                     <input type="number" class=" text-black rounded  text-center px-1" :value="ord" style="max-width: 50px;" @input="changeORD(id, name, $event)">
                                 </div>
                             </template>
+
                             <template #item-operation="{ id, name }">
                                 <div class="py-3 flex items-center justify-center">
                                     <button class="bg-red-600 text-white px-2 py-1 rounded-md mr-5" @click="showModalDeleteItem(id, name)">
@@ -140,6 +161,7 @@
             </div>
         </div>
         <DialogModal :show="modalDelete" @close="closeModal">
+
             <template #title>
                 Xóa dữ liệu
             </template>
@@ -201,6 +223,7 @@ export default {
     },
     data() {
         return {
+            appFileUrl: import.meta.env.VITE_API_FILE,
             isModalProduct: false,
             inputSearchName: false,
             checkboxDeleteToTrash: false,
@@ -346,8 +369,10 @@ export default {
 
         },
         async handleStatusChange(id, currentStatus) {
+            this.loading = true;
+
             try {
-                const newStatus = !currentStatus ? 1 : 0;
+                const newStatus = currentStatus == 1 ? 0 : 1;
                 // Gửi POST request tới server để thay đổi giá trị status
                 const response = await axios.post('/change-status', {
                     tb: 'product_banners',
@@ -358,11 +383,39 @@ export default {
                     toast.success("Hiện dữ liệu thành công", {
                         autoClose: 1000,
                     });
+                    this.loadData();
+
+
+
                 } else {
                     toast.success("Ẩn dữ liệu thành công", {
                         autoClose: 1000,
                     });
+                    this.loading = false;
+                    this.loadData();
+
+
                 }
+            } catch (error) {
+                console.error('Error while changing status:', error);
+            }
+        },
+        async handleHighlightChange(id, highlight) {
+
+            this.loading = true;
+            try {
+                const newHighlight = highlight == 1 ? 0 : 1;
+                // Gửi POST request tới server để thay đổi giá trị status
+                const response = await axios.post('/change-highlight', {
+                    tb: 'product_banners',
+                    id: id,
+                    highlight: newHighlight, // Chuyển đổi giá trị status
+                });
+                toast.success("Chỉnh sửa hightlight thành công!", {
+                    autoClose: 1000,
+                });
+                this.loadData();
+
             } catch (error) {
                 console.error('Error while changing status:', error);
             }
@@ -378,28 +431,22 @@ export default {
 
 
         dataAll.value = data.props.data;
-        dataAll.value = data.props.data.map(item => {
-            return { ...item, status: item.status === 1 ? true : false };
-        });
+
+        const loading = ref(false)
 
         const loadData = () => {
             axios.post('product-banner/load-data-table')
                 .then((response) => {
                     let returnData = response.data;
                     dataPage.value = returnData.data;
-                    dataPage.value = returnData.data.map(item => {
-                        return { ...item, status: item.status === 1 ? true : false };
-                    });
+                    loading.value = false;
+
                 })
                 .catch((error) => {
                     console.log(error);
                 });
         }
 
-        const checkedStatusItems = ref([]);
-        dataAll.value.forEach(element => {
-            checkedStatusItems.value[element.id] = element.status;
-        });
 
 
         dataPage.value = dataAll.value;
@@ -417,7 +464,7 @@ export default {
 
 
         return {
-            dataPage, checkedStatusItems, loadData, searchDataTable, searchName
+            dataPage, loading, loadData, searchDataTable, searchName
         }
     },
     // Các phương thức khác của component

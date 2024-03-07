@@ -45,12 +45,15 @@ class EpisodeController extends Controller
             $slug = $this->makeSlug($rq->name);
             if (
                 Episode::whereNotIn('id', [$id])
+                    ->where('id_product', $id_product)
                     ->where('slug', $slug)
                     ->first()
             ) {
                 return response()->json(['error' => 'Đã có tên này']);
             } else {
-                Episode::where('id', $id)->update(['name' => $rq->name, 'slug' => $slug]);
+                Episode::where('id', $id)
+                    ->where('id_product', $id_product)
+                    ->update(['name' => $rq->name, 'slug' => $slug]);
                 return response()->json(['success' => 'Sửa  tên tập thành công thành công']);
             }
         } else {

@@ -14,8 +14,30 @@ use App\Models\ListView;
 use App\Models\Province;
 use App\Models\District;
 use App\Models\Ward;
+use App\Models\Server;
+use App\Models\Product;
+use App\Models\Episode;
+use App\Models\Category;
 class VinawebappController extends Controller
 {
+    function showDashboard()
+    {
+        $listProductError = [];
+
+        $ListServerError = Episode::whereDoesntHave('servers')
+            ->orWhereHas('servers', function ($query) {
+                $query->whereNull('embed_url')->orWhere('embed_url', '');
+            })
+            ->get();
+        foreach ($ListServerError as $key => $value) {
+            $listProductError[$key]['episode'] = $value->name;
+            $product = Product::find($value->id_product);
+            $listProductError[$key]['product'] = $product->name;
+            $category = Category::find($product->id_category);
+            $listProductError[$key]['category'] = $category->name;
+        }
+        return Inertia::render('Dashboard', ['data' => $listProductError]);
+    }
     function changeStatus(Request $request)
     {
         DB::table($request->tb)

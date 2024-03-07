@@ -10,7 +10,7 @@
                 <template #item="item">
                     <li class="col-span-6 p-1 ButtonMutipleImage_item border">
                         <span class="absolute z-10 bg-white  w-5 text-center text-xs bottom-0 border-solid border-purple-700 border-2">{{ item.index }}</span>
-                        <img :src="item.element" width="100%" height="auto" class="w-full h-auto" alt="" />
+                        <img :src="appFileUrl+'/'+item.element" width="100%" height="auto" class="w-full h-auto" alt="" />
                         <div class="delete">
                             <button @click="deleteItem(item.index)" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">
                                 <icon :icon="['fas', 'x']" />
@@ -62,6 +62,11 @@
 import { ref, watchEffect, toRefs } from 'vue';
 import draggable from 'vuedraggable';
 export default {
+  data () {
+    return {
+        appFileUrl:import.meta.env.VITE_API_FILE
+    }
+  },
     components: {
         draggable
     },

@@ -117,6 +117,11 @@ class ProductSeriesController extends Controller
         } else {
             $data['url_avatar'] = $rq->url_avatar;
         }
+        if (!$rq->url_bg) {
+            return response()->json(['error' => 'Vui lòng chọn ảnh nền', 'column' => 'url_bg']);
+        } else {
+            $data['url_bg'] = $rq->url_bg;
+        }
 
         if (!$rq->meta_title) {
             return response()->json(['error' => 'Vui lòng nhập tiêu đề link để tối ưu SEO', 'column' => 'meta_title']);
@@ -222,6 +227,11 @@ class ProductSeriesController extends Controller
         } else {
             $data['url_avatar'] = $rq->url_avatar;
         }
+        if (!$rq->url_bg) {
+            return response()->json(['error' => 'Vui lòng chọn ảnh nền', 'column' => 'url_bg']);
+        } else {
+            $data['url_bg'] = $rq->url_bg;
+        }
 
         if (!$rq->meta_title) {
             return response()->json(['error' => 'Vui lòng nhập tiêu đề link để tối ưu SEO', 'column' => 'meta_title']);
@@ -240,9 +250,16 @@ class ProductSeriesController extends Controller
         } else {
             $data['meta_desc'] = $rq->meta_desc;
         }
-
-        Product::where('id', $id)->update($data);
-        ProType::where('id_product', $id)->delete();
+        try {
+            Product::where('id', $id)->update($data);
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+        try {
+            ProType::where('id_product', $id)->delete();
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
         foreach ($rq->types as $type_id) {
             ProType::create([
                 'id_type' => $type_id,

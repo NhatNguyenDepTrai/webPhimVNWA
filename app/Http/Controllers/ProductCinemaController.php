@@ -117,6 +117,11 @@ class ProductCinemaController extends Controller
         } else {
             $data['url_avatar'] = $rq->url_avatar;
         }
+        if (!$rq->url_bg) {
+            return response()->json(['error' => 'Vui lòng chọn ảnh nền', 'column' => 'url_bg']);
+        } else {
+            $data['url_bg'] = $rq->url_bg;
+        }
 
         if (!$rq->meta_title) {
             return response()->json(['error' => 'Vui lòng nhập tiêu đề link để tối ưu SEO', 'column' => 'meta_title']);
@@ -221,6 +226,11 @@ class ProductCinemaController extends Controller
             return response()->json(['error' => 'Vui lòng chọn ảnh đại diện', 'column' => 'url_avatar']);
         } else {
             $data['url_avatar'] = $rq->url_avatar;
+        }
+        if (!$rq->url_bg) {
+            return response()->json(['error' => 'Vui lòng chọn ảnh nền', 'column' => 'url_bg']);
+        } else {
+            $data['url_bg'] = $rq->url_bg;
         }
 
         if (!$rq->meta_title) {

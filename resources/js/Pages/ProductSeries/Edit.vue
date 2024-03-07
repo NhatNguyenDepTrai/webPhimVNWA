@@ -104,6 +104,7 @@
                                     <div class="mb-3">
                                         <label for="name" class="block mb-2 font-bold text-base text-gray-900 dark:text-dark">Ảnh nền</label>
                                         <InputUrlImage ref="url_bg" :data="data_url_bg" />
+                                        <span class="text-red-600 text-xs" ref="scroll_url_bg">{{ error.url_bg }}</span>
                                     </div>
 
                                 </div>
@@ -199,6 +200,7 @@ export default {
                 desc: '',
                 types: '',
                 url_avatar: '',
+                url_bg: '',
                 types: '',
                 meta_image: '',
                 meta_title: '',
@@ -228,6 +230,7 @@ export default {
             this.error.desc = "";
             this.error.types = "";
             this.error.url_avatar = "";
+            this.error.url_bg = "";
             this.error.types = "";
             this.error.meta_image = "";
             this.error.meta_title = "";

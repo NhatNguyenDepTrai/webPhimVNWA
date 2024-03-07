@@ -15,6 +15,9 @@
                         </button>
                     </div>
                     <div class="float-right text-xs uppercase">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase py-2 px-2 rounded mr-4 text-xs" @click="loadData">
+                            <icon :icon="['fas', 'rotate-left']" class="mr-1" /> Load lại bảng
+                        </button>
                         <Link :href="route('ProductFeature.Trash')" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-2 rounded mr-4">
                         <icon :icon="['fas', 'trash']" class="mr-3" />Thùng rác ({{ trashCount }})
                         </Link>
@@ -31,55 +34,60 @@
                                     <option value="name">Tên</option>
                                     <option value="nameNation">Quốc Gia</option>
                                     <option value="nameYear">Năm Phát Hành</option>
+                                    <option value="newEpisode">Trạng thái phim</option>
                                 </select>
                                 <input type="text" v-model="searchValue" placeholder="Tìm kiếm">
                             </div>
 
                         </div>
-                        <DataTable :headers="headers" :search-field="searchField" :search-value="searchValue" :items="dataPage" buttons-pagination show-index v-model:items-selected="itemsSelected">
+                        <DataTable :loading="loading" :headers="headers" :search-field="searchField" :search-value="searchValue" :items="dataPage" buttons-pagination show-index v-model:items-selected="itemsSelected">
 
 
 
                             <template #item-name="{ name, full_name, url_avatar }">
                                 <div class="py-3 flex items-center justify-start">
-                                    <img :src="url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 xl:block hidden">
+                                    <img :src="appFileUrl + '/' + url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 xl:block hidden">
                                     <div>
                                         <span class=" block text-sm font-bold">{{ name }}</span>
                                         <span class=" block text-sm font-bold text-black/50">{{ full_name }}</span>
                                     </div>
                                 </div>
                             </template>
+
                             <template #item-status="{ id, status }">
                                 <div class="flex items-center cursor-pointer">
-                                    <input type="checkbox" :id="'statusCheckbox-' + id" v-model="checkedStatusItems[id]" class="hidden" @change="handleStatusChange(id, status)" />
+                                    <input type="checkbox" :id="'statusCheckbox-' + id" class="hidden" @change="handleStatusChange(id, status)" />
                                     <label :for="'statusCheckbox-' + id" class="flex items-center cursor-pointer">
                                         <div class="relative">
                                             <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
-                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': checkedStatusItems[id], 'bg-white': !checkedStatusItems[id] }"></div>
+                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': status == 1, 'bg-white': status == 0 }"></div>
                                             </div>
                                         </div>
 
                                     </label>
                                 </div>
                             </template>
+
                             <template #item-highlight="{ id, highlight }">
                                 <div class="flex items-center cursor-pointer justify-center">
-                                    <input type="checkbox" :id="'highlightCheckbox-' + id" v-model="checkedHighlightItems[id]" class="hidden" @change="handleHighlightChange(id, highlight)" />
+                                    <input type="checkbox" :id="'highlightCheckbox-' + id" class="hidden" @change="handleHighlightChange(id, highlight)" />
                                     <label :for="'highlightCheckbox-' + id" class="flex items-center cursor-pointer">
                                         <div class="relative">
                                             <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
-                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': checkedHighlightItems[id], 'bg-white': !checkedHighlightItems[id] }"></div>
+                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': highlight == 1, 'bg-white': highlight == 0 }"></div>
                                             </div>
                                         </div>
 
                                     </label>
                                 </div>
                             </template>
+
                             <template #item-ord="{ id, name, ord }">
                                 <div class="py-3 flex items-center justify-center">
                                     <input type="number" class=" text-black rounded  text-center px-1" :value="ord" style="max-width: 50px;" @input="changeORD(id, name, $event)">
                                 </div>
                             </template>
+
                             <template #item-operation="{ id, name }">
                                 <div class="py-3 flex items-center justify-center">
                                     <button class="bg-red-600 text-white px-2 py-1 rounded-md mr-5" @click="showModalDeleteItem(id, name)">
@@ -92,16 +100,13 @@
                             </template>
 
 
-                            <template #item-episode="{ episodes, id, url_avatar, full_name, name }">
+                            <template #item-episode="{ newEpisode, id, url_avatar, full_name, name }">
                                 <div class="flex items-center justify-center">
 
-                                    <div v-if="episodes.length <= 0">
-                                        <span class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">COMING SOON</span>
+                                    <div>
+                                        <span :class="{ 'bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300': newEpisode == 'COMING SOON', 'bg-green-100 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300': newEpisode != 'COMING SOON' }">{{ newEpisode }}</span>
                                     </div>
-                                    <div v-else>
 
-                                        <span class="bg-green-100 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300"> {{ episodes[episodes.length - 1].name }}</span>
-                                    </div>
                                     <div class="ms-5">
 
                                         <button @click="showListEpisode(id, url_avatar, full_name, name)" class="py-1 px-2 rounded bg-gray-600 text-white hover:text-white/80">
@@ -125,7 +130,7 @@
 
                                                 <!-- Ảnh xem trước -->
                                                 <div class=" p-1 bg-white">
-                                                    <img :src="item.meta_image" alt="Vinawebapp.com" class="w-full h-auto rounded-md">
+                                                    <img :src="appFileUrl + '/' + item.meta_image" alt="Vinawebapp.com" class="w-full h-auto rounded-md">
                                                 </div>
                                                 <div class="bg-gray-200 px-4 py-1 ">
                                                     <div class="text-gray-500 uppercase  ">Vinawebapp.com</div>
@@ -165,7 +170,7 @@
                                             Ảnh dữ liệu
                                         </div>
                                         <div class="col-span-9 p-2 border">
-                                            <img :src="item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                            <img :src="appFileUrl + '/' + item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
 
                                         </div>
                                     </div>
@@ -176,7 +181,7 @@
                                         <div class="col-span-9 p-2 border">
                                             <div class="" v-if="item.types.length > 0">
 
-                                                <span v-for="type_detail in item.types " class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ type_detail.name }}</span>
+                                                <span v-for=" type_detail  in  item.types  " class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{{ type_detail.name }}</span>
 
                                             </div>
                                             <div v-else>
@@ -201,6 +206,7 @@
             </div>
         </div>
         <DialogModal :show="modalDelete" @close="closeModal">
+
             <template #title>
                 Xóa dữ liệu
             </template>
@@ -210,7 +216,7 @@
                 <div class="mt-4">
                 </div>
                 <div v-if="itemsDelete.length > 0">
-                    <div class="flex items-center" v-for="item in itemsDelete">
+                    <div class="flex items-center" v-for=" item  in  itemsDelete ">
                         <icon :icon="['fas', 'x']" class="text-red-600 mr-1" /> <span>{{ item.name }}</span>
                     </div>
                 </div>
@@ -245,6 +251,7 @@
             </template>
         </DialogModal>
         <DialogModal :show="isModalEpisode" max-width="full">
+
             <template #title>
                 <div class="flex items-center justify-between">
                     <h3>
@@ -260,7 +267,7 @@
             <template #content>
                 <div class="flex justify-between items-center">
                     <div class="flex">
-                        <img :src="episode.dataProduct.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 xl:block hidden">
+                        <img :src="appFileUrl + '/' + episode.dataProduct.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 xl:block hidden">
                         <div>
                             <span class=" block text-sm font-bold">{{ episode.dataProduct.name }}</span>
                             <span class=" block text-sm font-bold text-black/50">{{ episode.dataProduct.full_name }}</span>
@@ -286,37 +293,9 @@
                         <template #item-name="{ name, id }">
                             {{ name }}
                         </template>
-                        <template #item-status="{ id, status }">
-                            <div class="flex items-center cursor-pointer">
-                                <input type="checkbox" :id="'statusCheckbox-' + id" v-model="checkedStatusItems[id]" class="hidden" @change="handleStatusChange(id, status)" />
-                                <label :for="'statusCheckbox-' + id" class="flex items-center cursor-pointer">
-                                    <div class="relative">
-                                        <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
-                                            <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': checkedStatusItems[id], 'bg-white': !checkedStatusItems[id] }"></div>
-                                        </div>
-                                    </div>
 
-                                </label>
-                            </div>
-                        </template>
-                        <template #item-highlight="{ id, highlight }">
-                            <div class="flex items-center cursor-pointer justify-center">
-                                <input type="checkbox" :id="'highlightCheckbox-' + id" v-model="checkedHighlightItems[id]" class="hidden" @change="handleHighlightChange(id, highlight)" />
-                                <label :for="'highlightCheckbox-' + id" class="flex items-center cursor-pointer">
-                                    <div class="relative">
-                                        <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
-                                            <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': checkedHighlightItems[id], 'bg-white': !checkedHighlightItems[id] }"></div>
-                                        </div>
-                                    </div>
 
-                                </label>
-                            </div>
-                        </template>
-                        <template #item-ord="{ id, name, ord }">
-                            <div class="py-3 flex items-center justify-center">
-                                <input type="number" class=" text-black rounded  text-center px-1" :value="ord" style="max-width: 50px;" @input="changeORD(id, name, $event)">
-                            </div>
-                        </template>
+
                         <template #item-operation="{ id, name }">
                             <div class="py-3 flex items-center justify-center">
                                 <button class="bg-red-600 text-white px-2 py-1 rounded-md mr-5" @click="episodeDeleteItem(id, episode.dataProduct.id)">
@@ -329,6 +308,7 @@
 
                             </div>
                         </template>
+
                         <template #expand="item">
                             <div class="p-4  px-3 bg-neutral-950 text-white">
                                 <div class="w-full py-3 text-xl text-white/90 uppercase font-bold text-center">
@@ -338,6 +318,7 @@
                                     <div class="py-2 px-5 flex items-center justify-end">
                                         <select v-model="episode.server.createItem.type">
                                             <option value="iframe">iframe</option>
+                                            <option value="video">video</option>
                                         </select>
                                         <input v-model="episode.server.createItem.embed_url" type="text" placeholder="Nhập embed url" class="ms-5 text-black/80" style="min-width:500px">
                                         <button @click="serverCreateItem(item.id, episode.dataProduct.id)" class="bg-green-800 border-0 ms-3 text-white/80 hover:text-white uppercase px-3 py-2">Thêm server</button>
@@ -352,7 +333,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr class="border-2 border-solid border-black/50" v-for=" server in item.servers">
+                                                <tr class="border-2 border-solid border-black/50" v-for="  server  in  item.servers ">
                                                     <td class="border-2 border-solid border-black/50 px-2">
                                                         <a class="text-sky-500 hover:text-blue-500" :href="server.embed_url" target="_blank">{{ server.embed_url }}</a>
 
@@ -409,6 +390,7 @@ export default {
     },
     data() {
         return {
+            appFileUrl: import.meta.env.VITE_API_FILE,
             isModalEpisode: false,
             episode: {
                 server: {
@@ -651,8 +633,10 @@ export default {
 
         },
         async handleStatusChange(id, currentStatus) {
+            this.loading = true;
+
             try {
-                const newStatus = !currentStatus ? 1 : 0;
+                const newStatus = currentStatus == 1 ? 0 : 1;
                 // Gửi POST request tới server để thay đổi giá trị status
                 const response = await axios.post('/change-status', {
                     tb: 'products',
@@ -663,10 +647,18 @@ export default {
                     toast.success("Hiện dữ liệu thành công", {
                         autoClose: 1000,
                     });
+                    this.loadData();
+
+
+
                 } else {
                     toast.success("Ẩn dữ liệu thành công", {
                         autoClose: 1000,
                     });
+                    this.loading = false;
+                    this.loadData();
+
+
                 }
             } catch (error) {
                 console.error('Error while changing status:', error);
@@ -674,8 +666,9 @@ export default {
         },
         async handleHighlightChange(id, highlight) {
 
+            this.loading = true;
             try {
-                const newHighlight = !highlight ? 1 : 0;
+                const newHighlight = highlight == 1 ? 0 : 1;
                 // Gửi POST request tới server để thay đổi giá trị status
                 const response = await axios.post('/change-highlight', {
                     tb: 'products',
@@ -685,6 +678,8 @@ export default {
                 toast.success("Chỉnh sửa hightlight thành công!", {
                     autoClose: 1000,
                 });
+                this.loadData();
+
             } catch (error) {
                 console.error('Error while changing status:', error);
             }
@@ -702,35 +697,26 @@ export default {
         trashCount.value = data.props.trashCountNumber;
 
         dataAll.value = data.props.data;
-        dataAll.value = data.props.data.map(item => {
-            return { ...item, status: item.status === 1 ? true : false };
-        });
 
+        const loading = ref(false)
         const loadData = () => {
-            axios.post('product-series/load-data-table')
+            loading.value = true;
+            axios.post('product-feature/load-data-table')
                 .then((response) => {
                     let returnData = response.data;
                     dataPage.value = returnData.data;
-                    dataPage.value = returnData.data.map(item => {
-                        return { ...item, status: item.status === 1 ? true : false };
-                    });
+
 
                     trashCount.value = returnData.trashCount;
-                    console.log(trashCount.value)
+                    loading.value = false;
+
                 })
                 .catch((error) => {
                     console.log(error);
                 });
         }
 
-        const checkedStatusItems = ref([]);
-        dataAll.value.forEach(element => {
-            checkedStatusItems.value[element.id] = element.status;
-        });
-        const checkedHighlightItems = ref([]);
-        dataAll.value.forEach(element => {
-            checkedHighlightItems.value[element.id] = element.highlight;
-        });
+
 
         dataPage.value = dataAll.value;
 
@@ -744,8 +730,8 @@ export default {
 
 
         return {
-            dataPage, checkedStatusItems, checkedHighlightItems, trashCount, loadData, searchField,
-            searchValue
+            dataPage, trashCount, loadData, searchField,
+            searchValue, loading
         }
     },
     // Các phương thức khác của component

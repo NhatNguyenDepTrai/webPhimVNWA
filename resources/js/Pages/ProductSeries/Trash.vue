@@ -29,7 +29,7 @@
                         <DataTable :headers="headers" :items="dataPage" buttons-pagination show-index v-model:items-selected="itemsSelected">
                             <template #item-name="{ name, url_avatar }">
                                 <div class="py-3 flex items-center justify-start">
-                                    <img :src="url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block"> <span class=" block text-sm font-bold">{{ name }}</span>
+                                    <img :src="appFileUrl+'/'+url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block"> <span class=" block text-sm font-bold">{{ name }}</span>
                                 </div>
                             </template>
 
@@ -58,7 +58,7 @@
 
                                                 <!-- Ảnh xem trước -->
                                                 <div class=" p-1 bg-white">
-                                                    <img :src="item.meta_image" alt="Vinawebapp.com" class="w-full h-auto rounded-md">
+                                                    <img :src="appFileUrl+'/'+item.meta_image" alt="Vinawebapp.com" class="w-full h-auto rounded-md">
                                                 </div>
                                                 <div class="bg-gray-200 px-4 py-1 ">
                                                     <div class="text-gray-500 uppercase  ">Vinawebapp.com</div>
@@ -100,11 +100,11 @@
                                         <div class="col-span-9 p-2 border">
                                             <div class="flex">
                                                 <div>
-                                                    <img :src="item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                                    <img :src="appFileUrl+'/'+item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
                                                     Avatar Desktop
                                                 </div>
                                                 <div class="ml-10">
-                                                    <img :src="item.url_avatar_mobile" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                                    <img :src="appFileUrl+'/'+item.url_avatar_mobile" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
                                                     Avatar Mobile
                                                 </div>
                                             </div>
@@ -225,6 +225,7 @@ export default {
     },
     data() {
         return {
+        appFileUrl:import.meta.env.VITE_API_FILE,
             checkboxDeleteToTrash: false,
             itemsRestore: [],
             itemsDelete: [],

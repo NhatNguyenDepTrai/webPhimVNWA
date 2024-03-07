@@ -21,7 +21,7 @@
                     </div>
 
                     <div class="my-2 py-10">
-                        <DataTable :headers="headers" :items="dataPage" buttons-pagination show-index v-model:items-selected="itemsSelected">
+                        <DataTable :loading="loading" :headers="headers" :items="dataPage" buttons-pagination show-index v-model:items-selected="itemsSelected">
                             <template #header-name="header">
                                 <div class="filter-column  flex items-center">
                                     <div>
@@ -47,11 +47,11 @@
                             </template>
                             <template #item-status="{ id, status }">
                                 <div class="flex items-center cursor-pointer">
-                                    <input type="checkbox" :id="'statusCheckbox-' + id" v-model="checkedStatusItems[id]" class="hidden" @change="handleStatusChange(id, status)" />
+                                    <input type="checkbox" :id="'statusCheckbox-' + id" class="hidden" @change="handleStatusChange(id, status)" />
                                     <label :for="'statusCheckbox-' + id" class="flex items-center cursor-pointer">
                                         <div class="relative">
                                             <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
-                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': checkedStatusItems[id], 'bg-white': !checkedStatusItems[id] }"></div>
+                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': status == 1, 'bg-white': status == 0 }"></div>
                                             </div>
                                         </div>
 
@@ -60,11 +60,11 @@
                             </template>
                             <template #item-highlight="{ id, highlight }">
                                 <div class="flex items-center cursor-pointer justify-center">
-                                    <input type="checkbox" :id="'highlightCheckbox-' + id" v-model="checkedHighlightItems[id]" class="hidden" @change="handleHighlightChange(id, highlight)" />
+                                    <input type="checkbox" :id="'highlightCheckbox-' + id" class="hidden" @change="handleHighlightChange(id, highlight)" />
                                     <label :for="'highlightCheckbox-' + id" class="flex items-center cursor-pointer">
                                         <div class="relative">
                                             <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
-                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': checkedHighlightItems[id], 'bg-white': !checkedHighlightItems[id] }"></div>
+                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md" :class="{ 'transform translate-x-full bg-purple-500': highlight == 1, 'bg-white': highlight == 0 }"></div>
                                             </div>
                                         </div>
 
@@ -99,7 +99,7 @@
 
                                                 <!-- Ảnh xem trước -->
                                                 <div class=" p-1 bg-white">
-                                                    <img :src="item.meta_image" alt="Vinawebapp.com" class="w-full h-auto rounded-md">
+                                                    <img :src="appFileUrl+'/'+item.meta_image" alt="Vinawebapp.com" class="w-full h-auto rounded-md">
                                                 </div>
                                                 <div class="bg-gray-200 px-4 py-1 ">
                                                     <div class="text-gray-500 uppercase  ">Vinawebapp.com</div>
@@ -141,11 +141,11 @@
                                         <div class="col-span-9 p-2 border">
                                             <div class="flex">
                                                 <div>
-                                                    <img :src="item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                                    <img :src="appFileUrl+'/'+item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
                                                     Avatar Desktop
                                                 </div>
                                                 <div class="ml-10">
-                                                    <img :src="item.url_avatar_mobile" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                                    <img :src="appFileUrl+'/'+item.url_avatar_mobile" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
                                                     Avatar Mobile
                                                 </div>
                                             </div>
@@ -230,6 +230,7 @@ export default {
     },
     data() {
         return {
+        appFileUrl:import.meta.env.VITE_API_FILE,
             inputSearchName: false,
             checkboxDeleteToTrash: false,
             itemsDelete: [],
@@ -337,8 +338,10 @@ export default {
 
         },
         async handleStatusChange(id, currentStatus) {
+            this.loading = true;
+
             try {
-                const newStatus = !currentStatus ? 1 : 0;
+                const newStatus = currentStatus == 1 ? 0 : 1;
                 // Gửi POST request tới server để thay đổi giá trị status
                 const response = await axios.post('/change-status', {
                     tb: 'years',
@@ -349,10 +352,18 @@ export default {
                     toast.success("Hiện dữ liệu thành công", {
                         autoClose: 1000,
                     });
+                    this.loadData();
+
+
+
                 } else {
                     toast.success("Ẩn dữ liệu thành công", {
                         autoClose: 1000,
                     });
+                    this.loading = false;
+                    this.loadData();
+
+
                 }
             } catch (error) {
                 console.error('Error while changing status:', error);
@@ -360,8 +371,9 @@ export default {
         },
         async handleHighlightChange(id, highlight) {
 
+            this.loading = true;
             try {
-                const newHighlight = !highlight ? 1 : 0;
+                const newHighlight = highlight == 1 ? 0 : 1;
                 // Gửi POST request tới server để thay đổi giá trị status
                 const response = await axios.post('/change-highlight', {
                     tb: 'years',
@@ -371,6 +383,8 @@ export default {
                 toast.success("Chỉnh sửa hightlight thành công!", {
                     autoClose: 1000,
                 });
+                this.loadData();
+
             } catch (error) {
                 console.error('Error while changing status:', error);
             }
@@ -385,19 +399,15 @@ export default {
 
 
         dataAll.value = data.props.data;
-        dataAll.value = data.props.data.map(item => {
-            return { ...item, status: item.status === 1 ? true : false };
-        });
 
+        const loading = ref(false)
         const loadData = () => {
             axios.post('year/load-data-table')
                 .then((response) => {
                     let returnData = response.data;
                     dataPage.value = returnData.data;
-                    dataPage.value = returnData.data.map(item => {
-                        return { ...item, status: item.status === 1 ? true : false };
-                    });
 
+                    loading.value = false;
 
                 })
                 .catch((error) => {
@@ -405,14 +415,7 @@ export default {
                 });
         }
 
-        const checkedStatusItems = ref([]);
-        dataAll.value.forEach(element => {
-            checkedStatusItems.value[element.id] = element.status;
-        });
-        const checkedHighlightItems = ref([]);
-        dataAll.value.forEach(element => {
-            checkedHighlightItems.value[element.id] = element.highlight;
-        });
+
 
         dataPage.value = dataAll.value;
         const searchName = ref('');
@@ -429,7 +432,7 @@ export default {
 
 
         return {
-            dataPage, checkedStatusItems, checkedHighlightItems, loadData, searchDataTable, searchName
+            dataPage, loading, loadData, searchDataTable, searchName
         }
     },
     // Các phương thức khác của component

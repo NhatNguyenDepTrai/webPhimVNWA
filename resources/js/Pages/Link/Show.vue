@@ -42,7 +42,7 @@
                             </template>
                             <template #item-name="{ name, url_avatar }">
                                 <div class="py-3 flex items-center justify-start">
-                                    <img :src="url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block"> <span class=" block text-sm font-bold">{{ name }}</span>
+                                    <img :src="appFileUrl+'/'+url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block"> <span class=" block text-sm font-bold">{{ name }}</span>
                                 </div>
                             </template>
                             <template #item-status="{ id, status }">
@@ -112,11 +112,11 @@
                                         <div class="col-span-9 p-2 border">
                                             <div class="flex">
                                                 <div>
-                                                    <img :src="item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                                    <img :src="appFileUrl+'/'+item.url_avatar" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
                                                     Avatar Desktop
                                                 </div>
                                                 <div class="ml-10">
-                                                    <img :src="item.url_avatar_mobile" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
+                                                    <img :src="appFileUrl+'/'+item.url_avatar_mobile" alt="vinawebapp.com" class="w-20 h-auto mr-3 block">
                                                     Avatar Mobile
                                                 </div>
                                             </div>
@@ -201,6 +201,7 @@ export default {
     },
     data() {
         return {
+        appFileUrl:import.meta.env.VITE_API_FILE,
             inputSearchName: false,
             checkboxDeleteToTrash: false,
             itemsDelete: [],

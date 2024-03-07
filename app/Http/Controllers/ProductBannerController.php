@@ -12,7 +12,7 @@ class ProductBannerController extends Controller
 {
     public function loadDataTable()
     {
-        $data = ProductBanner::with('product:id,name,full_name,url_bg')->get();
+        $data = ProductBanner::with('product:id,name,full_name,url_bg')->orderBy('ORD', 'ASC')->get();
 
         foreach ($data as $key => $value) {
             $value->create_time = Carbon::parse($value->created_at)->format('H:i , d/m/Y ');

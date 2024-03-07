@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Models\CategoryProject;
+use App\Models\Product;
 
 class SoftDeleteExpiredRecords implements ShouldQueue
 {
@@ -30,12 +30,12 @@ class SoftDeleteExpiredRecords implements ShouldQueue
     public function handle()
     {
         try {
-            foreach (CategoryProject::onlyTrashed()->get() as $key => $value) {
+            foreach (Product::onlyTrashed()->get() as $key => $value) {
                 $now = Carbon::now();
                 $delete_at = Carbon::parse($value->deleted_at);
 
                 if ($delete_at->diffInDays($now) > 30) {
-                    CategoryProject::where('id', $value->id)->forceDelete();
+                    Product::where('id', $value->id)->forceDelete();
                 }
             }
         } catch (\Exception $e) {

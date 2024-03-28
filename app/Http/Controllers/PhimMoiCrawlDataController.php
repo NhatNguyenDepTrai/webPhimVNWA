@@ -15,6 +15,7 @@ use App\Models\ProType;
 use App\Models\Episode;
 use App\Models\Server;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\Process\Process;
 class PhimMoiCrawlDataController extends Controller
 {
     function downloadFileAndGetFilename($url)
@@ -57,110 +58,119 @@ class PhimMoiCrawlDataController extends Controller
             dd($e->getMessage());
         }
     }
+    function crawlTest()
+    {
+        $response = Http::get('http://nodeapp.ketromphim.com/crawl?p=https://phimmoiiii.net/xem-phim/lupin-phan-3-lupin-season-3-tap-3');
+        $data = $response->json();
+        // $link = $data['link'];
+        // $source = $data['source'];
+        dd($data);
+    }
 
     function crawlPhimBo()
     {
-        for ($i = 1; $i < 10; $i++) {
-            if ($i <= 1) {
-                $url = 'https://phimmoiiii.net/phim-bo';
-            } else {
-                $url = 'https://phimmoiiii.net/phim-bo/page/' . $i;
+        $url = 'https://phimmoiiii.net/phim-bo';
+
+        $client = new Client();
+
+        $crawler = $client->request('GET', $url);
+
+        $crawler->filter('#archive-content  article.item ')->each(function (Crawler $node) {
+            $productName = $node->filter(' .data h3 a')->text();
+            $slug = $this->createSlug($productName);
+
+            $productFullName = $node->filter(' .data span')->text();
+            $image_avatar = $node->filter('.poster img')->attr('src');
+            $url_avatar = $this->downloadFileAndGetFilename($image_avatar);
+
+            $linkDetail = $node->filter('.poster  a')->link()->getUri();
+
+            $clientDetailProduct = new Client();
+            $crawlerDetailProduct = $clientDetailProduct->request('GET', $linkDetail);
+            if (!$crawlerDetailProduct) {
+                return true;
             }
+            $id_nation = 30;
 
-            $client = new Client();
+            $desc = $crawlerDetailProduct->filter('#info div.wp-content')->text();
+            $dateString = $crawlerDetailProduct->filter('.sheader .data  .date')->text();
+            $date = Carbon::createFromFormat('M. d, Y', $dateString);
+            $day = $date->day;
+            $month = $date->month;
+            $yearName = $date->year;
+            $productDate = "Ngày: $day, Tháng: $month";
+            $yearName = str_replace('Năm phát hành: ', '', $yearName);
+            $year = Year::where('name', 'like', $yearName . '%')->first();
+            if ($year) {
+                $id_year = $year->id;
+            } else {
+                return true;
+            }
+            $productCheck = Product::where('slug', $slug)->first();
+            if ($productCheck) {
+                $lastId = $productCheck->id;
+            } else {
+                $dataProduct = [];
+                $dataProduct['id_category'] = 1;
+                $dataProduct['id_year'] = $id_year;
+                $dataProduct['id_nation'] = $id_nation;
+                $dataProduct['url_avatar'] = $url_avatar;
+                $dataProduct['full_name'] = $productFullName;
+                $dataProduct['date'] = $productDate;
+                $dataProduct['name'] = $productName;
+                $dataProduct['slug'] = $slug;
+                $dataProduct['desc'] = $desc;
+                $dataProduct['meta_image'] = $url_avatar;
+                $dataProduct['meta_title'] = $productName . ' - ' . $productFullName . ' | Kẻ Trộm Phim';
+                $dataProduct['meta_desc'] = $desc;
+                $lastId = Product::create($dataProduct)->id;
 
-            $crawler = $client->request('GET', $url);
-
-            $crawler->filter('#archive-content  article.item ')->each(function (Crawler $node) {
-                $productName = $node->filter(' .data h3 a')->text();
-                $slug = $this->createSlug($productName);
-
-                $productFullName = $node->filter(' .data span')->text();
-                $image_avatar = $node->filter('.poster img')->attr('src');
-                $url_avatar = $this->downloadFileAndGetFilename($image_avatar);
-
-                $linkDetail = $node->filter('.poster  a')->link()->getUri();
-
-                $clientDetailProduct = new Client();
-                $crawlerDetailProduct = $clientDetailProduct->request('GET', $linkDetail);
-                if (!$crawlerDetailProduct) {
-                    return true;
-                }
-                $id_nation = 30;
-
-                $desc = $crawlerDetailProduct->filter('#info div.wp-content')->text();
-                $dateString = $crawlerDetailProduct->filter('.sheader .data  .date')->text();
-                $date = Carbon::createFromFormat('M. d, Y', $dateString);
-                $day = $date->day;
-                $month = $date->month;
-                $yearName = $date->year;
-                $productDate = "Ngày: $day, Tháng: $month";
-                $yearName = str_replace('Năm phát hành: ', '', $yearName);
-                $year = Year::where('name', 'like', $yearName . '%')->first();
-                if ($year) {
-                    $id_year = $year->id;
-                } else {
-                    return true;
-                }
-                $productCheck = Product::where('slug', $slug)->first();
-                if ($productCheck) {
-                    $lastId = $productCheck->id;
-                } else {
-                    $dataProduct = [];
-                    $dataProduct['id_category'] = 1;
-                    $dataProduct['id_year'] = $id_year;
-                    $dataProduct['id_nation'] = $id_nation;
-                    $dataProduct['url_avatar'] = $url_avatar;
-                    $dataProduct['full_name'] = $productFullName;
-                    $dataProduct['date'] = $productDate;
-                    $dataProduct['name'] = $productName;
-                    $dataProduct['slug'] = $slug;
-                    $dataProduct['desc'] = $desc;
-                    $dataProduct['meta_image'] = $url_avatar;
-                    $dataProduct['meta_title'] = $productName . ' - ' . $productFullName . ' | Kẻ Trộm Phim';
-                    $dataProduct['meta_desc'] = $desc;
-                    $lastId = Product::create($dataProduct)->id;
-
-                    $crawlerDetailProduct->filter('.sgeneros a')->each(function (Crawler $type) use ($lastId) {
-                        $nameType = $type->text();
-                        $nameType = str_replace('Phim ', '', $nameType);
-                        $slugType = $this->createSlug($nameType);
-                        $type = Type::firstOrCreate(['name' => $nameType], ['slug' => $slugType]);
-                        ProType::create([
-                            'id_type' => $type->id,
-                            'id_product' => $lastId,
-                        ]);
-                    });
-                }
-                $crawlerDetailProduct->filter('ul.episodios li a:not(.nonex)')->each(function (Crawler $episode) use ($lastId) {
-                    $episodeLink = $episode->filter('a:not(.nonex)')->link()->getUri();
-                    $episodeName = $episode->filter('a:not(.nonex)')->text();
-                    $slugEpisode = $this->createSlug($episodeName);
-                    $checkEpisode = Episode::where('slug', 'like', $slugEpisode . '%')
-                        ->where('id_product', $lastId)
-                        ->first();
-                    if ($checkEpisode) {
-                        return true;
-                    }
-                    $episode = Episode::create(['id_product' => $lastId, 'name' => $episodeName, 'slug' => $slugEpisode]);
-
-                    $server = exec('node NodeCrawl/app.js "' . $episodeLink . '"');
-                    Server::create(['id_episode' => $episode->id, 'embed_url' => $server, 'type' => 'iframe']);
+                $crawlerDetailProduct->filter('.sgeneros a')->each(function (Crawler $type) use ($lastId) {
+                    $nameType = $type->text();
+                    $nameType = str_replace('Phim ', '', $nameType);
+                    $slugType = $this->createSlug($nameType);
+                    $type = Type::firstOrCreate(['name' => $nameType], ['slug' => $slugType]);
+                    ProType::create([
+                        'id_type' => $type->id,
+                        'id_product' => $lastId,
+                    ]);
                 });
+            }
+            $crawlerDetailProduct->filter('ul.episodios li a:not(.nonex)')->each(function (Crawler $episode) use ($lastId) {
+                $episodeLink = $episode->filter('a:not(.nonex)')->link()->getUri();
+                $episodeName = $episode->filter('a:not(.nonex)')->text();
+                $slugEpisode = $this->createSlug($episodeName);
+                $checkEpisode = Episode::where('slug', 'like', $slugEpisode . '%')
+                    ->where('id_product', $lastId)
+                    ->first();
+                if ($checkEpisode) {
+                    return true;
+                }
+                $episode = Episode::create(['id_product' => $lastId, 'name' => $episodeName, 'slug' => $slugEpisode]);
+
+                $server = shell_exec('node NodeCrawl/app.js "' . $episodeLink . '"');
+                $server = explode('_', $server);
+                $type = $server[0];
+                $src = $server[1];
+                echo $src;
+                if ($type != 0 && $src != 0) {
+                    Server::create(['id_episode' => $episode->id, 'embed_url' => $src, 'type' => $type]);
+                } else {
+                    return true;
+                }
             });
-        }
+        });
     }
 
     function index()
     {
         for ($i = 1; $i < 10; $i++) {
             if ($i <= 1) {
-                $url = 'https://phimmoiiii.net/phim-le';
             } else {
                 $url = 'https://phimmoiiii.net/phim-le/page/' . $i;
             }
         }
-
+        $url = 'https://phimmoiiii.net/phim-le';
         $client = new Client();
 
         $crawler = $client->request('GET', $url);

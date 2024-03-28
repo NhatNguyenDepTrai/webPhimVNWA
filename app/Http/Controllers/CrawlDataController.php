@@ -46,6 +46,33 @@ class CrawlDataController extends Controller
         $string = strtolower($string);
         return $string;
     }
+    function test()
+    {
+        $episodeLink = 'https://wibu47.com/xem-phim/one-piece-dao-hai-tac/1095';
+        $clientDetailEpisode = new Client();
+        $crawlerDetailEpisode = $clientDetailEpisode->request('GET', $episodeLink);
+        if (!$crawlerDetailEpisode) {
+            return true;
+        }
+        $server = $crawlerDetailEpisode->filterXPath('//script[contains(.,"VPRO")]')->text();
+        $startPos = strpos($server, 'VPRO = "') + strlen('VPRO = "');
+        $endPos = strpos($server, '"', $startPos);
+        $serverIframe = substr($server, $startPos, $endPos - $startPos);
+        if ($serverIframe) {
+            echo $serverIframe;
+            // Server::create(['id_episode' => $episodeId, 'embed_url' => $serverIframe, 'type' => 'iframe']);
+        } else {
+            $inputValue = $crawlerDetailEpisode->filter('input[name="src_an0"]')->attr('value');
+
+            // Giải mã giá trị JSON trong thuộc tính value
+            $inputValue = json_decode($inputValue, true);
+
+            // Lấy giá trị của thuộc tính 'file'
+            $fileUrl = $inputValue['file'];
+            echo $fileUrl;
+            // Server::create(['id_episode' => $episodeId, 'embed_url' => $fileUrl, 'type' => 'video']);
+        }
+    }
     function index()
     {
         $url = 'https://wibu47.com/the-loai/tien-hiep';

@@ -149,7 +149,15 @@ class PhimMoi_PhimBo_CrawlDataJob implements ShouldQueue
                     $episode = Episode::create(['id_product' => $lastId, 'name' => $episodeName, 'slug' => $slugEpisode]);
 
                     $server = exec('node public/NodeCrawl/app.js "' . $episodeLink . '"');
-                    Server::create(['id_episode' => $episode->id, 'embed_url' => $server, 'type' => 'iframe']);
+                    $result = json_decode($server);
+                    $type = $result->type;
+                    $src = $result->src;
+                    if ($type && $src) {
+                        Server::create(['id_episode' => $episode->id, 'embed_url' => $src, 'type' => $type]);
+                    } else {
+                        // Không tìm thấy loại và src
+                        echo 'No type or src found';
+                    }
                 });
             });
         }

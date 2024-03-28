@@ -17,15 +17,25 @@ const puppeteer = require("puppeteer");
     const src = await page.evaluate(() => {
         const iframe = document.querySelector("iframe.metaframe");
         if (iframe) {
-            const src = iframe.src;
-            const url = new URL(src);
-            return url.searchParams.get("link");
+            const iframeSRC = iframe.src;
+            const startIndex = iframeSRC.indexOf('=') + 1; // Tìm vị trí bắt đầu của phần link
+            const src = iframeSRC.slice(startIndex);
+            const type = 'iframe';
+            return type + '_' + src;
         } else {
-            return null;
+            const video = document.querySelector("video");
+            if (video) {
+                const src = video.src;
+                const type = 'video';
+                return type + '_' + src;
+            } else {
+                return 0 + '_' + 0;
+            }
         }
     });
 
     console.log(src);
 
     await browser.close();
+    res.json({ link: link, source: src });
 })();

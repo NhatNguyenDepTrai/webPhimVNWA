@@ -33,7 +33,7 @@ use App\Http\Controllers\PhimMoiCrawlDataController;
 |
 */
 
-// Route::get('/crawl', [PhimMoiCrawlDataController::class, 'crawlPhimBo']);
+Route::get('/crawl', [PhimMoiCrawlDataController::class, 'crawlTest']);
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

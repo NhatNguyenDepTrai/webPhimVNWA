@@ -16,11 +16,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
-        $schedule->job(new PhimMoi_PhimLe_CrawlDataJob())->everyTenMinutes();
-        $schedule->job(new PhimMoi_PhimBo_CrawlDataJob())->everyTenMinutes();
-        $schedule->job(new CrawlWibu47China())->everyTenMinutes();
-        $schedule->job(new CrawlWibu47Japan())->everyTenMinutes();
+        $schedule->command('crawl:phimMoi-phimLe')->everyTenMinutes();
     }
 
     /**

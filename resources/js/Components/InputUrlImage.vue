@@ -11,7 +11,7 @@
         </button>
     </div>
     <div class="border rounded p-4">
-        <img :src="appFileUrl+'/'+url_image" width="100%" height="auto" class="w-full h-auto" alt="">
+        <img :src="appFileUrl + '/' + url_image" width="100%" height="auto" class="w-full h-auto" alt="">
     </div>
 </template>
 
@@ -19,11 +19,11 @@
 import { ref, watchEffect } from 'vue';
 
 export default {
-  data () {
-    return {
-        appFileUrl:import.meta.env.VITE_API_FILE
-    }
-  },
+    data() {
+        return {
+            appFileUrl: import.meta.env.VITE_API_FILE
+        }
+    },
     methods: {
 
     },

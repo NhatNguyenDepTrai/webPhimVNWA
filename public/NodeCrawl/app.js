@@ -37,5 +37,5 @@ const puppeteer = require("puppeteer");
     console.log(src);
 
     await browser.close();
-    res.json({ link: link, source: src });
+
 })();

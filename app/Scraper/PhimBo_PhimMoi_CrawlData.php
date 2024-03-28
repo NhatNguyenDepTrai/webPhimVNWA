@@ -125,22 +125,21 @@ class PhimBo_PhimMoi_CrawlData
                     $episode = Episode::create(['id_product' => $lastId, 'name' => $episodeName, 'slug' => $slugEpisode]);
                     $id_episode = $episode->id;
                 }
-                $response = Http::get('http://localhost:3000/crawl?p=' . $episodeLink);
-                $data = $response->json();
-                $source = $data['source'];
-                $server = explode('_', $source);
-                $type = $server[0];
-                $src = $server[1];
-                if ($type != 0 && $src != 0) {
-                    $checkServer = Server::where('embed_url', $src)->first();
-                    if (!$checkServer) {
-                        Server::create(['id_episode' => $id_episode, 'embed_url' => $src, 'type' => $type]);
-                    } else {
-                        return true;
-                    }
+                $server = shell_exec('node public/NodeCrawl/app.js "' . $episodeLink . '"');
+            $server = explode('_', $server);
+            $type = $server[0];
+            $src = $server[1];
+
+            if ($type != 0 && $src != 0) {
+                $checkServer = Server::where('embed_url', $src)->first();
+                if (!$checkServer) {
+                    Server::create(['id_episode' => $id_episode, 'embed_url' => $src, 'type' => $type]);
                 } else {
                     return true;
                 }
+            } else {
+                return true;
+            }
             });
         });
     }

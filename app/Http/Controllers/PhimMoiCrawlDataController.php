@@ -60,7 +60,7 @@ class PhimMoiCrawlDataController extends Controller
     }
     function crawlTest()
     {
-        $response = Http::get('http://nodeapp.ketromphim.com/crawl?p=https://phimmoiiii.net/xem-phim/lupin-phan-3-lupin-season-3-tap-3');
+        $response = Http::get('http://nodeapp.webphim.demo/crawl?p=https://phimmoiiii.net/xem-phim/lupin-phan-3-lupin-season-3-tap-3');
         $data = $response->json();
         // $link = $data['link'];
         // $source = $data['source'];
